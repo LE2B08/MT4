@@ -18,7 +18,7 @@ namespace Math
 	}
 
 	// 行列のコメント
-	 void MatrixScreenPrint(int x, int y, Matrix4x4 matrix, const char* label)
+	void MatrixScreenPrint(int x, int y, Matrix4x4 matrix, const char* label)
 	{
 		for (int row = 0; row < 4; row++)
 		{
@@ -455,6 +455,39 @@ namespace Math
 		rotateMatrix.m[3][3] = 1.0f;
 
 		return rotateMatrix;
+	}
+
+	Matrix4x4 DirectionTodirection(const Vector3& from, const Vector3& to)
+	{
+		// from と to の正規化
+		Vector3 fromNorm = Normalize(from);
+		Vector3 toNorm = Normalize(to);
+
+		// 回転軸（クロス積を計算）
+		Vector3 axis = Cross(fromNorm, toNorm);
+
+		// 回転角度（内積からコサインを計算してアークコサインで角度に変換）
+		float dot = Dot(fromNorm, toNorm);
+		float angle = acos(dot);
+
+		// 回転軸を正規化
+		axis = Normalize(axis);
+
+		// ロドリゲスの回転公式を使って回転行列を計算
+		float x = axis.x, y = axis.y, z = axis.z;
+		float c = cos(angle);
+		float s = sin(angle);
+		float t = 1.0f - c;
+
+		// 4x4の回転行列を作成
+		Matrix4x4 rotationMatrix = {
+			x * x * t + c, x * y * t + z * s, x * z * t - y * s, 0.0f,
+			x * y * t - z * s, y * y * t + c, y * z * t + x * s, 0.0f,
+			x * z * t + y * s, y * z * t - x * s, z * z * t + c, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		return rotationMatrix;
 	}
 
 	void DrawGrid(const Matrix4x4& ViewProjectionMatrix, const Matrix4x4& ViewportMatrix)

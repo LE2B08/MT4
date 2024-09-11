@@ -62,6 +62,7 @@ namespace Math
 	Matrix4x4 MakeCrossProductMatrix(Vector3 normalizedAxis, float oneMinusCosTheta);
 	Matrix4x4 MakeOuterProductMatrix(Vector3 normalizedAxis, float sinTheta);
 	Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle);
+	Matrix4x4 DirectionTodirection(const Vector3& from, const Vector3& to);
 
 	/*----------立体を描画する関数----------*/
 	void DrawGrid(const Matrix4x4& ViewProjectionMatrix, const Matrix4x4& ViewportMatrix);
