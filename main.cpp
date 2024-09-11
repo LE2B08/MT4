@@ -1,11 +1,14 @@
 #include <Novice.h>
 #include <imgui.h>
 #include "Math//MathFunction.h"
+#include "Quaternion.h"
 #include <algorithm>
 
-static const int kRowHeight = 20;
-
 using namespace Math;
+
+//間隔
+static const int kRowHeight = 20;
+static const int kColumnWidth = 60;
 
 const char kWindowTitle[] = "学籍番号";
 
@@ -19,10 +22,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Vector3 from0 = Normalize(Vector3{ 1.0f, 0.7f, 0.5f });
-	Vector3 to0 = -from0;
-	Vector3 from1 = Normalize(Vector3{ -0.6f, 0.9f, 0.2f });
-	Vector3 to1 = Normalize(Vector3{ 0.4f, 0.7f, -0.5f });
+	Quaternion rotation = MakeRotateAxisAngleQuaternion(Normalize(Vector3{ 1.0f,0.4f,-0.2f }), 0.45f);
+	Vector3 pointY = { 2.1f, -0.9f, 1.3f };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -37,9 +38,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		Matrix4x4 rotateMatrix0 = DirectionTodirection(Normalize(Vector3{ 1.0f,0.0f,0.0f }), Normalize(Vector3{ -1.0f,0.0f,0.0f }));
-		Matrix4x4 rotateMatrix1 = DirectionTodirection(from0, to0);
-		Matrix4x4 rotateMatrix2 = DirectionTodirection(from1, to1);
+		Matrix4x4 rotateMatrix = MakeRotateMatrix(rotation);
+		Vector3 rotateByQuaternion = RotateVector(pointY, rotation);
+		Vector3 rotateByMatrix = Transform(pointY, rotateMatrix);
 
 		///
 		/// ↑更新処理ここまで
@@ -49,9 +50,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		MatrixScreenPrint(0, 0, rotateMatrix0, "rotateMatrix0");
-		MatrixScreenPrint(0, kRowHeight * 5, rotateMatrix1, "rotateMatrix1");
-		MatrixScreenPrint(0, kRowHeight * 10, rotateMatrix2, "rotateMatrix2");
+		QuaternionScreenPrintf(0, 0, rotation, " : rotation");
+		MatrixScreenPrint(0, kRowHeight, rotateMatrix, "rotateMatrix");
+		VectorScreenPrintf(0, kRowHeight * 6, rotateByQuaternion, " : rotateByQuaternion");
+		VectorScreenPrintf(0, kRowHeight * 7, rotateByMatrix, " : rotateByMatrix");
 
 		///
 		/// ↑描画処理ここまで
