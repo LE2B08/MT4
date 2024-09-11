@@ -3,74 +3,7 @@
 #include "Math//MathFunction.h"
 #include <algorithm>
 
-//間隔
-static const int kRowHeight = 20;
-static const int kColumnWidth = 60;
-
 using namespace Math;
-
-Matrix4x4 MakeCosThetaMatrix(const Vector3 cosTheta)
-{
-	return {
-		cosTheta.x, 0.0f,     0.0f,     0.0f,
-		0.0f,     cosTheta.y, 0.0f,     0.0f,
-		0.0f,     0.0f,     cosTheta.z, 0.0f,
-		0.0f,     0.0f,     0.0f,     1.0f
-	};
-}
-
-Matrix4x4 MakeCrossProductMatrix(Vector3 normalizedAxis, float oneMinusCosTheta)
-{
-	return {
-		normalizedAxis.x * normalizedAxis.x * oneMinusCosTheta, normalizedAxis.x * normalizedAxis.y * oneMinusCosTheta, normalizedAxis.x * normalizedAxis.z * oneMinusCosTheta, 0.0f,
-		normalizedAxis.x * normalizedAxis.y * oneMinusCosTheta, normalizedAxis.y * normalizedAxis.y * oneMinusCosTheta, normalizedAxis.y * normalizedAxis.z * oneMinusCosTheta, 0.0f,
-		normalizedAxis.x * normalizedAxis.z * oneMinusCosTheta, normalizedAxis.y * normalizedAxis.z * oneMinusCosTheta, normalizedAxis.z * normalizedAxis.z * oneMinusCosTheta, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	};
-}
-
-// 外積 n * n^t の項を作成
-Matrix4x4 MakeOuterProductMatrix(Vector3 normalizedAxis, float sinTheta)
-{
-	return {
-		0.0f, -normalizedAxis.z * sinTheta, normalizedAxis.y * sinTheta, 0.0f,
-		normalizedAxis.z * sinTheta, 0.0f, -normalizedAxis.x * sinTheta, 0.0f,
-		-normalizedAxis.y * sinTheta, normalizedAxis.x * sinTheta, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	};
-}
-
-Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle)
-{
-	// 回転軸を正規化
-	Vector3 normalizedAxis = Normalize(axis);
-
-	// cos(θ) と sin(θ) を計算
-	Vector3 cosTheta = { cos(angle),cos(angle) ,cos(angle) };
-	float sinTheta = -sin(angle);
-	float oneMinusCosTheta = 1.0f - cos(angle);
-
-	Matrix4x4 rotateMatrix;
-
-	rotateMatrix = MakeCosThetaMatrix(cosTheta) + MakeCrossProductMatrix(normalizedAxis, oneMinusCosTheta) + MakeOuterProductMatrix(normalizedAxis, sinTheta);
-
-	rotateMatrix.m[3][3] = 1.0f;
-
-	return rotateMatrix;
-}
-
-// 行列のコメント
-static void MatrixScreenPrint(int x, int y, Matrix4x4 matrix, const char* label)
-{
-	for (int row = 0; row < 4; row++)
-	{
-		for (int colum = 0; colum < 4; colum++)
-		{
-			Novice::ScreenPrintf(x + colum * kColumnWidth, y + row * kRowHeight + 20, "%6.03f", matrix.m[row][colum]);
-		}
-	}
-	Novice::ScreenPrintf(x, y, "%s", label);
-}
 
 const char kWindowTitle[] = "学籍番号";
 
