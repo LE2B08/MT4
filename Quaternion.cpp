@@ -130,3 +130,47 @@ Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion)
 
 	return result;
 }
+
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t)
+{
+	// クォータニオンの内積を計算
+	float dot = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+
+	// 内積が負の場合、反転させて最短経路を取るようにする
+	Quaternion q1Copy = q1;
+	if (dot < 0.0f) {
+		dot = -dot;
+		q1Copy.x = -q1.x;
+		q1Copy.y = -q1.y;
+		q1Copy.z = -q1.z;
+		q1Copy.w = -q1.w;
+	}
+
+	// 内積が非常に大きい場合、線形補間を行う
+	//const float epsilon = 1e-6f;
+	//if (dot > 1.0f - epsilon) {
+	//	// 線形補間
+	//	result.x = q0.x + t * (q1Copy.x - q0.x);
+	//	result.y = q0.y + t * (q1Copy.y - q0.y);
+	//	result.z = q0.z + t * (q1Copy.z - q0.z);
+	//	result.w = q0.w + t * (q1Copy.w - q0.w);
+	//	return Normalize(result);  // 正規化して返す
+	//}
+
+	// θ (theta) を求める
+	float theta = acosf(dot);
+
+	// sin(θ) を使って補間係数を計算
+	float sinTheta = sinf(theta);
+	float a = sinf((1.0f - t) * theta) / sinTheta;
+	float b = sinf(t * theta) / sinTheta;
+
+	// 補間されたクォータニオンを計算
+	Quaternion result{};
+	result.x = a * q0.x + b * q1Copy.x;
+	result.y = a * q0.y + b * q1Copy.y;
+	result.z = a * q0.z + b * q1Copy.z;
+	result.w = a * q0.w + b * q1Copy.w;
+
+	return result;
+}
