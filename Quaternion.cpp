@@ -137,7 +137,6 @@ Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t)
 	float dot = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
 
 	// 内積が負の場合、反転させて最短経路を取るようにする
-	Quaternion q0Copy = q0;
 	Quaternion q1Copy = q1;
 	if (dot < 0.0f) {
 		q1Copy.x = -q1.x; // q1を反転
