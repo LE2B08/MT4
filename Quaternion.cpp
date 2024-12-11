@@ -66,3 +66,18 @@ void Quaternion::QuaternionScreenPrint(int x, int y, const Quaternion& quaternio
 		Novice::ScreenPrintf(x + i * kColumnWidth, y + 20, "%6.03f", components[i]);
 	}
 }
+
+Quaternion Quaternion::MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle)
+{
+	return Quaternion();
+}
+
+Vector3 Quaternion::RotateVector(const Vector3& vector, const Quaternion& quaternion)
+{
+	return Vector3();
+}
+
+Matrix4x4 Quaternion::MakeRotateMatrix(const Quaternion& quaternion)
+{
+	return Matrix4x4();
+}
