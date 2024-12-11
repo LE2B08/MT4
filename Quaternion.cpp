@@ -1,9 +1,12 @@
 #include "Quaternion.h"
+#include "Math//MathFunction.h"
 #include "Novice.h"
 
 //間隔
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
+
+using namespace Math;
 
 Quaternion Quaternion::Multiply(const Quaternion& lhs, const Quaternion& rhs)
 {
@@ -69,15 +72,72 @@ void Quaternion::QuaternionScreenPrint(int x, int y, const Quaternion& quaternio
 
 Quaternion Quaternion::MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle)
 {
-	return Quaternion();
+	Quaternion result;
+	float halfAngle = angle / 2.0f;
+	float sinHalfAngle = sinf(halfAngle);
+
+	// 回転軸を正規化
+	Vector3 normalizedAxis = Math::Normalize(axis);
+
+	// クォータニオンの成分を計算
+	result.x = normalizedAxis.x * sinHalfAngle;
+	result.y = normalizedAxis.y * sinHalfAngle;
+	result.z = normalizedAxis.z * sinHalfAngle;
+	result.w = cosf(halfAngle);
+
+	return result;
 }
 
 Vector3 Quaternion::RotateVector(const Vector3& vector, const Quaternion& quaternion)
 {
-	return Vector3();
+	// ベクトルをクォータニオン形式に変換
+	Quaternion qVector = { vector.x, vector.y, vector.z, 0.0f };
+
+	// クォータニオンの逆（共役）を取得
+	Quaternion qConjugate = Conjugate(quaternion);
+
+	// クォータニオンの掛け算を用いて回転を適用
+	Quaternion qResult = Multiply(Multiply(quaternion, qVector), qConjugate);
+
+	// 回転後のベクトルを取得
+	return { qResult.x, qResult.y, qResult.z };
 }
 
 Matrix4x4 Quaternion::MakeRotateMatrix(const Quaternion& quaternion)
 {
-	return Matrix4x4();
+	Matrix4x4 result;
+
+	float xx = quaternion.x * quaternion.x;
+	float yy = quaternion.y * quaternion.y;
+	float zz = quaternion.z * quaternion.z;
+	float ww = quaternion.w * quaternion.w;
+	float xy = quaternion.x * quaternion.y;
+	float xz = quaternion.x * quaternion.z;
+	float yz = quaternion.y * quaternion.z;
+	float wx = quaternion.w * quaternion.x;
+	float wy = quaternion.w * quaternion.y;
+	float wz = quaternion.w * quaternion.z;
+
+	result.m[0][0] = ww + xx - yy - zz;
+	result.m[0][1] = 2.0f * (xy + wz);
+	result.m[0][2] = 2.0f * (xz - wy);
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = 2.0f * (xy - wz);
+	result.m[1][1] = ww - xx + yy - zz;
+	result.m[1][2] = 2.0f * (yz + wx);
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = 2.0f * (xz + wy);
+	result.m[2][1] = 2.0f * (yz - wx);
+	result.m[2][2] = ww - xx - yy + zz;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
 }
+
