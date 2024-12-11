@@ -46,7 +46,7 @@ Quaternion Quaternion::Normalize(const Quaternion& quaternion)
 
 float Quaternion::Dot(const Quaternion& q1, const Quaternion& q2)
 {
-	 return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q2.z * q2.z; 
+	return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q2.z * q2.z;
 }
 
 Quaternion Quaternion::Inverse(const Quaternion& quaternion)
@@ -60,19 +60,6 @@ Quaternion Quaternion::Inverse(const Quaternion& quaternion)
 	Quaternion conjugate = Conjugate(quaternion);
 
 	return Quaternion{ conjugate.x / normSquared, conjugate.y / normSquared, conjugate.z / normSquared, conjugate.w / normSquared };
-}
-
-void Quaternion::QuaternionScreenPrint(int x, int y, const Quaternion& quaternion, const char* label)
-{
-	// ラベルを出力
-	Novice::ScreenPrintf(x, y, "%s", label);
-
-	// クォータニオンを出力
-	const float components[4] = { quaternion.x, quaternion.y, quaternion.z, quaternion.w };
-	for (int i = 0; i < 4; i++)
-	{
-		Novice::ScreenPrintf(x + i * kColumnWidth, y + 20, "%6.02f", components[i]);
-	}
 }
 
 Quaternion Quaternion::MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle)
@@ -146,44 +133,65 @@ Matrix4x4 Quaternion::MakeRotateMatrix(const Quaternion& quaternion)
 	return result;
 }
 
-Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t)
+Quaternion Quaternion::Slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, float t)
 {
-	// 内積を計算 (q0とq1のコサイン角度)
-	float dot = Dot(q0, q1);
+	// 正規化された入力を想定
+	Quaternion q1 = quaternion1;
+	Quaternion q2 = quaternion2;
 
-	// 内積が負の場合、逆方向のクォータニオンを使用して補間を最短経路に
-	Quaternion q1_copy = q1;
-	if (dot < 0.0f) {
-		dot = -dot;
-		q1_copy.x = -q1.x;
-		q1_copy.y = -q1.y;
-		q1_copy.z = -q1.z;
-		q1_copy.w = -q1.w;
+	// 内積を計算
+	float dotProduct = Dot(Normalize(q1), Normalize(q2));
+
+	// クォータニオンが逆向きの場合、q2を反転して最短経路を取る
+	if (dotProduct < 0.0f)
+	{
+		dotProduct = -dotProduct;
+		q2.w = -q2.w;
+		q2.x = -q2.x;
+		q2.y = -q2.y;
+		q2.z = -q2.z;
 	}
 
-	// 角度が非常に小さい場合は線形補間を使用
+	// 内積が非常に大きい場合、線形補間を使用
 	const float EPSILON = 1e-6f;
-	if (dot > 1.0f - EPSILON) {
-		return Quaternion(
-			q0.x + t * (q1_copy.x - q0.x),
-			q0.y + t * (q1_copy.y - q0.y),
-			q0.z + t * (q1_copy.z - q0.z),
-			q0.w + t * (q1_copy.w - q0.w)
-		);
+	if (dotProduct > 1.0f - EPSILON)
+	{
+		// 線形補間（Lerp）
+		Quaternion result{};
+		result.w = (1.0f - t) * q1.w + t * q2.w;
+		result.x = (1.0f - t) * q1.x + t * q2.x;
+		result.y = (1.0f - t) * q1.y + t * q2.y;
+		result.z = (1.0f - t) * q1.z + t * q2.z;
+
+		// 正規化
+		Normalize(result);
 	}
 
-	// 角度thetaを計算
-	float theta = std::acos(dot);
-	float sinTheta = std::sqrt(1.0f - dot * dot);
+	// 球面線形補間（Slerp）
+	float theta = std::acos(dotProduct); // θ = cos^-1(dotProduct)
+	float sinTheta = std::sqrtf(1.0f - dotProduct * dotProduct); // sinθ
 
-	// Slerp式を計算
-	float weight0 = std::sin((1.0f - t) * theta) / sinTheta;
-	float weight1 = std::sin(t * theta) / sinTheta;
+	float weight1 = std::sin((1.0f - t) * theta) / sinTheta;
+	float weight2 = std::sin(t * theta) / sinTheta;
 
-	return Quaternion(
-		weight0 * q0.x + weight1 * q1_copy.x,
-		weight0 * q0.y + weight1 * q1_copy.y,
-		weight0 * q0.z + weight1 * q1_copy.z,
-		weight0 * q0.w + weight1 * q1_copy.w
-	);
+	Quaternion result{};
+	result.w = weight1 * q1.w + weight2 * q2.w;
+	result.x = weight1 * q1.x + weight2 * q2.x;
+	result.y = weight1 * q1.y + weight2 * q2.y;
+	result.z = weight1 * q1.z + weight2 * q2.z;
+
+	return result;
+}
+
+void Quaternion::QuaternionScreenPrint(int x, int y, const Quaternion& quaternion, const char* label)
+{
+	// ラベルを出力
+	Novice::ScreenPrintf(x, y, "%s", label);
+
+	// クォータニオンを出力
+	const float components[4] = { quaternion.x, quaternion.y, quaternion.z, quaternion.w };
+	for (int i = 0; i < 4; i++)
+	{
+		Novice::ScreenPrintf(x + i * kColumnWidth, y + 20, "%6.02f", components[i]);
+	}
 }
