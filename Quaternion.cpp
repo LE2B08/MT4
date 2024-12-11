@@ -152,8 +152,24 @@ Quaternion Quaternion::Slerp(const Quaternion& quaternion1, const Quaternion& qu
 		q2.z = -q2.z;
 	}
 
-	// 内積が非常に大きい場合、線形補間を使用
+	//// 完全に逆向きの場合（dotProductが-1.0の場合）
+	//if (dotProduct >= 1.0f - 1e-6f)
+	//{
+	//	// 線形補間（Lerp）で代替（非常に特殊なケース）
+	//	Quaternion result{};
+	//	result.w = (1.0f - t) * q1.w + t * q2.w;
+	//	result.x = (1.0f - t) * q1.x + t * q2.x;
+	//	result.y = (1.0f - t) * q1.y + t * q2.y;
+	//	result.z = (1.0f - t) * q1.z + t * q2.z;
+
+	//	// 結果を正規化して返す
+	//	return Normalize(result);
+	//}
+
+	// 線形補間を使用する閾値
 	const float EPSILON = 1e-6f;
+
+	// dotProductが1.0に近い場合（θが非常に小さい場合）、線形補間を使用
 	if (dotProduct > 1.0f - EPSILON)
 	{
 		// 線形補間（Lerp）
@@ -163,8 +179,8 @@ Quaternion Quaternion::Slerp(const Quaternion& quaternion1, const Quaternion& qu
 		result.y = (1.0f - t) * q1.y + t * q2.y;
 		result.z = (1.0f - t) * q1.z + t * q2.z;
 
-		// 正規化
-		Normalize(result);
+		// 結果を正規化して返す
+		return Normalize(result);
 	}
 
 	// 球面線形補間（Slerp）
