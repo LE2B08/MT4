@@ -1,6 +1,7 @@
 #include <Novice.h>
 #include <imgui.h>
 #include "Math//MathFunction.h"
+#include "Quaternion.h"
 #include <algorithm>
 
 static const int kRowHeight = 20;
@@ -19,10 +20,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Vector3 from0 = Normalize(Vector3{ 1.0f, 0.7f, 0.5f });
-	Vector3 to0 = -from0;
-	Vector3 from1 = Normalize(Vector3{ -0.6f, 0.9f, 0.2f });
-	Vector3 to1 = Normalize(Vector3{ 0.4f, 0.7f, -0.5f });
+	Quaternion q1 = { 2.0f,3.0f,4.0f,1.0f };
+	Quaternion q2 = { 1.0f,3.0f,5.0f,2.0f };
+	Quaternion identity = Quaternion::IdentityQuaternion();
+	Quaternion conj = Quaternion::Conjugate(q1);
+	Quaternion inv = Quaternion::Inverse(q1);
+	Quaternion normal = Quaternion::Normalize(q1);
+	Quaternion mul1 = Quaternion::Multiply(q1, q2);
+	Quaternion mul2 = Quaternion::Multiply(q2, q1);
+	float norm = Quaternion::Norm(q1);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -37,10 +43,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		Matrix4x4 rotateMatrix0 = DirectionTodirection(Normalize(Vector3{ 1.0f,0.0f,0.0f }), Normalize(Vector3{ -1.0f,0.0f,0.0f }));
-		Matrix4x4 rotateMatrix1 = DirectionTodirection(from0, to0);
-		Matrix4x4 rotateMatrix2 = DirectionTodirection(from1, to1);
-
 		///
 		/// ↑更新処理ここまで
 		///
@@ -49,9 +51,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		MatrixScreenPrint(0, 0, rotateMatrix0, "rotateMatrix0");
-		MatrixScreenPrint(0, kRowHeight * 5, rotateMatrix1, "rotateMatrix1");
-		MatrixScreenPrint(0, kRowHeight * 10, rotateMatrix2, "rotateMatrix2");
+		Quaternion::QuaternionScreenPrint(0, kRowHeight * 0, identity, "Identity");
+		Quaternion::QuaternionScreenPrint(0, kRowHeight * 3, conj, "Conjugate");
+		Quaternion::QuaternionScreenPrint(0, kRowHeight * 6, inv, "Inverse");
+		Quaternion::QuaternionScreenPrint(0, kRowHeight * 9, normal, "Normalize");
+		Quaternion::QuaternionScreenPrint(0, kRowHeight * 12, mul1, "Multiply(q1, q2)");
+		Quaternion::QuaternionScreenPrint(0, kRowHeight * 15, mul2, "Multiply(q2, q1)");
+		Novice::ScreenPrintf(0, kRowHeight * 18, "Norm : %.2f", norm);
 
 		///
 		/// ↑描画処理ここまで
