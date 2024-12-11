@@ -48,6 +48,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
+		Quaternion::QuaternionScreenPrint(0, 0, rotation, " : rotation");
+		MatrixScreenPrint(0, kRowHeight * 2, rotateMatrix, "rotateMatrix");
+		VectorScreenPrintf(0, kRowHeight * 7, rotateByQuaternion, " : rotateByQuaternion");
+		VectorScreenPrintf(0, kRowHeight * 8, rotateByMatrix, " : rotateByMatrix");
+
 		///
 		/// ↑描画処理ここまで
 		///
