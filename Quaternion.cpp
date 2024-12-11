@@ -44,6 +44,11 @@ Quaternion Quaternion::Normalize(const Quaternion& quaternion)
 	return Quaternion{ quaternion.x / norm, quaternion.y / norm, quaternion.z / norm, quaternion.w / norm };
 }
 
+float Quaternion::Dot(const Quaternion& q1, const Quaternion& q2)
+{
+	 return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q2.z * q2.z; 
+}
+
 Quaternion Quaternion::Inverse(const Quaternion& quaternion)
 {
 	float normSquared = pow(Norm(quaternion), 2.0f);
@@ -66,7 +71,7 @@ void Quaternion::QuaternionScreenPrint(int x, int y, const Quaternion& quaternio
 	const float components[4] = { quaternion.x, quaternion.y, quaternion.z, quaternion.w };
 	for (int i = 0; i < 4; i++)
 	{
-		Novice::ScreenPrintf(x + i * kColumnWidth, y + 20, "%6.03f", components[i]);
+		Novice::ScreenPrintf(x + i * kColumnWidth, y + 20, "%6.02f", components[i]);
 	}
 }
 
@@ -141,3 +146,44 @@ Matrix4x4 Quaternion::MakeRotateMatrix(const Quaternion& quaternion)
 	return result;
 }
 
+Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t)
+{
+	// 内積を計算 (q0とq1のコサイン角度)
+	float dot = Dot(q0, q1);
+
+	// 内積が負の場合、逆方向のクォータニオンを使用して補間を最短経路に
+	Quaternion q1_copy = q1;
+	if (dot < 0.0f) {
+		dot = -dot;
+		q1_copy.x = -q1.x;
+		q1_copy.y = -q1.y;
+		q1_copy.z = -q1.z;
+		q1_copy.w = -q1.w;
+	}
+
+	// 角度が非常に小さい場合は線形補間を使用
+	const float EPSILON = 1e-6f;
+	if (dot > 1.0f - EPSILON) {
+		return Quaternion(
+			q0.x + t * (q1_copy.x - q0.x),
+			q0.y + t * (q1_copy.y - q0.y),
+			q0.z + t * (q1_copy.z - q0.z),
+			q0.w + t * (q1_copy.w - q0.w)
+		);
+	}
+
+	// 角度thetaを計算
+	float theta = std::acos(dot);
+	float sinTheta = std::sqrt(1.0f - dot * dot);
+
+	// Slerp式を計算
+	float weight0 = std::sin((1.0f - t) * theta) / sinTheta;
+	float weight1 = std::sin(t * theta) / sinTheta;
+
+	return Quaternion(
+		weight0 * q0.x + weight1 * q1_copy.x,
+		weight0 * q0.y + weight1 * q1_copy.y,
+		weight0 * q0.z + weight1 * q1_copy.z,
+		weight0 * q0.w + weight1 * q1_copy.w
+	);
+}
