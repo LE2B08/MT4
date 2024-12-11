@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		Matrix4x4 rotateMatrix0 = DirectionTodirection(Normalize(Vector3{ -1.0f,0.0f,0.0f }), Normalize(Vector3{ 1.0f,0.0f,0.0f }));
+		Matrix4x4 rotateMatrix0 = DirectionTodirection(Normalize(Vector3{ 1.0f,0.0f,0.0f }), Normalize(Vector3{ -1.0f,0.0f,0.0f }));
 		Matrix4x4 rotateMatrix1 = DirectionTodirection(from0, to0);
 		Matrix4x4 rotateMatrix2 = DirectionTodirection(from1, to1);
 
